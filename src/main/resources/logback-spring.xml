@@ -1,0 +1,146 @@
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Everything (startup, universe fetch, raw-data diagnostics, ingestion summaries,
+         connection/reconnect events, and - via propagation - alerts too) persisted here so
+         it survives after the terminal is closed. -->
+    <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Spike alerts: green on console, own durable file. withJansi lets Logback render
+         ANSI color through Jansi on Windows consoles that don't natively interpret it. -->
+    <appender name="SPIKE_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%green(%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg)%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="SPIKE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/alerts-spikes.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/alerts-spikes-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Drop alerts: red on console, own durable file. -->
+    <appender name="DROP_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%red(%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg)%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="DROP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/alerts-drops.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/alerts-drops-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Reversal alerts: yellow on console, own durable file. -->
+    <appender name="REVERSAL_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%yellow(%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg)%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="REVERSAL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/alerts-reversals.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/alerts-reversals-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Inflow alerts (money entering): cyan on console, own durable file. -->
+    <appender name="INFLOW_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%cyan(%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg)%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="INFLOW_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/alerts-inflow.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/alerts-inflow-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Outflow alerts (money exiting): magenta on console, own durable file. -->
+    <appender name="OUTFLOW_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%magenta(%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg)%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="OUTFLOW_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/alerts-outflow.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/alerts-outflow-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- additivity="false": these use their own colored console appender instead of the
+         plain root CONSOLE, but still write to APP_FILE directly so app.log keeps a single
+         combined chronological view alongside the split alert files. -->
+    <logger name="ALERTS.SPIKE" level="INFO" additivity="false">
+        <appender-ref ref="SPIKE_CONSOLE"/>
+        <appender-ref ref="SPIKE_FILE"/>
+        <appender-ref ref="APP_FILE"/>
+    </logger>
+    <logger name="ALERTS.DROP" level="INFO" additivity="false">
+        <appender-ref ref="DROP_CONSOLE"/>
+        <appender-ref ref="DROP_FILE"/>
+        <appender-ref ref="APP_FILE"/>
+    </logger>
+    <logger name="ALERTS.REVERSAL" level="INFO" additivity="false">
+        <appender-ref ref="REVERSAL_CONSOLE"/>
+        <appender-ref ref="REVERSAL_FILE"/>
+        <appender-ref ref="APP_FILE"/>
+    </logger>
+    <logger name="ALERTS.INFLOW" level="INFO" additivity="false">
+        <appender-ref ref="INFLOW_CONSOLE"/>
+        <appender-ref ref="INFLOW_FILE"/>
+        <appender-ref ref="APP_FILE"/>
+    </logger>
+    <logger name="ALERTS.OUTFLOW" level="INFO" additivity="false">
+        <appender-ref ref="OUTFLOW_CONSOLE"/>
+        <appender-ref ref="OUTFLOW_FILE"/>
+        <appender-ref ref="APP_FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="APP_FILE"/>
+    </root>
+</configuration>

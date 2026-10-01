@@ -1,0 +1,53 @@
+stockly:
+  scanner:
+    poll-interval-seconds: 60
+    spike:
+      enabled: true
+      threshold-percent: 3.0
+      lookback-minutes: 5
+      cooldown-minutes: 5
+    drop:
+      enabled: true
+      threshold-percent: 3.0
+      lookback-minutes: 15
+      cooldown-minutes: 15
+    reversal:
+      enabled: true
+      lookback-minutes: 30
+      drop-percent: 3.0
+      recovery-percent: 2.0
+      cooldown-minutes: 15
+    volume-inflow:
+      enabled: true
+      # Fires at 3x (300%) this symbol's own recent average dollar volume, computed
+      # from Alpaca bar vw*v (see docs) - a relative measure, not a fixed dollar amount.
+      volume-multiplier-percent: 1000.0
+      lookback-minutes: 20
+      cooldown-minutes: 15
+    volume-outflow:
+      enabled: false
+      volume-multiplier-percent: 1000.0
+      lookback-minutes: 20
+      cooldown-minutes: 15
+    rvol:
+      enabled: true
+      # Baseline window for "normal" dollar volume, independent of whichever rule's
+      # own lookback fired the alert.
+      lookback-minutes: 30
+    composite:
+      enabled: true
+      # How far back to count "other rules also fired on this symbol recently" for
+      # the combo score shown on the alert line.
+      window-minutes: 10
+  marketdata:
+    alpaca:
+      api-key-id: ${ALPACA_API_KEY_ID:}
+      secret-key: ${ALPACA_SECRET_KEY:}
+      feed: iex
+  universe:
+    # Threshold in IEX-observed shares/day, NOT real market volume (Alpaca's free-tier
+    # volume figures are themselves IEX-only - roughly 1-5% of true total volume, confirmed
+    # live against AAPL/MSFT/NVDA/INTC). See docs/EXTERNAL_APIS.md before changing this.
+    min-daily-volume: 50000
+  diagnostics:
+    log-raw-data: false
